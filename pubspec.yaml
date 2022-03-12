@@ -28,7 +28,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.stunware.package_usage_stats.package_usage_stats
+        package: com.stunware.package_usage_stats
         pluginClass: PackageUsageStatsPlugin
       ios:
         pluginClass: PackageUsageStatsPlugin

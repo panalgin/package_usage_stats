@@ -10,11 +10,11 @@ class PackageUsageStats {
     return version;
   }
 
-  static Future<PermissionStatus?> get checkPermissionStatus async {
-    final PermissionStatus? status =
+  static Future<PermissionStatus?> checkPermissionStatus() async {
+    final result =
         await _channel.invokeMethod("checkPermissionStatus");
 
-    return status;
+    return PermissionStatus.values.firstWhere((e) => e.toString() == result);
   }
 }
 
