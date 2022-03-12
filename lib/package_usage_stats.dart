@@ -11,10 +11,9 @@ class PackageUsageStats {
   }
 
   static Future<PermissionStatus?> checkPermissionStatus() async {
-    final result =
-        await _channel.invokeMethod("checkPermissionStatus");
+    final result = await _channel.invokeMethod("checkPermissionStatus");
 
-    return PermissionStatus.values.firstWhere((e) => e.toString() == result);
+    return PermissionStatus.values.firstWhere((e) => e.name == result);
   }
 }
 

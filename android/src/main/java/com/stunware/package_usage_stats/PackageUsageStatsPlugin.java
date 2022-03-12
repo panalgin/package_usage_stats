@@ -28,7 +28,7 @@ public class PackageUsageStatsPlugin implements FlutterPlugin, MethodCallHandler
       result.success("Android " + android.os.Build.VERSION.RELEASE);
     }
     else if (call.method.equals("checkPermissionStatus")) {
-      result.success(PermissionStatus.granted);
+      result.success(PermissionStatus.granted.name());
     }
 
     else {
