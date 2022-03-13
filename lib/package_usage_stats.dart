@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 class PackageUsageStats {
-  static const MethodChannel _channel = MethodChannel('package_usage_stats');
+  static const MethodChannel _channel =
+      MethodChannel('package_usage_stats/method_channel');
+  static const EventChannel _eventChannel =
+      EventChannel('package_usage_stats/event_channel');
 
   static Future<bool> checkPermissionStatus() async {
     final result = await _channel.invokeMethod("checkPermissionStatus");
@@ -16,6 +19,10 @@ class PackageUsageStats {
 
     return result;
   }
+
+  static Stream<bool?> get onPermissionStatusChanged => _eventChannel
+      .receiveBroadcastStream()
+      .map((event) => event is bool ? event : null);
 }
 
 enum PermissionStatus {

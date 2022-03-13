@@ -25,9 +25,18 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    bool status;
+    bool isGranted = await PackageUsageStats.checkPermissionStatus();
 
-    status = await PackageUsageStats.checkPermissionStatus();
+    PackageUsageStats.onPermissionStatusChanged.listen((event) {
+      setState(() {
+        if (event != null) {
+          _permissionStatus =
+              event ? "Granted In Background" : "Denied In Background";
+        } else {
+          _permissionStatus = "Background Detection Error";
+        }
+      });
+    });
 
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
@@ -35,7 +44,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _permissionStatus = status ? 'Granted' : 'Denied';
+      _permissionStatus = isGranted ? 'Granted' : 'Denied';
     });
   }
 
