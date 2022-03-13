@@ -70,6 +70,10 @@ class _MyAppState extends State<MyApp> {
             Center(
               child: Text("PackageUsageStats permission: $_permissionStatus"),
             ),
+            ElevatedButton(
+              onPressed: () => PackageUsageStats.openAppUsageSettings(),
+              child: const Text("Open App Usage Settings"),
+            ),
           ],
         ),
       ),

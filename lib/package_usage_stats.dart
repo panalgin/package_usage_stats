@@ -15,6 +15,12 @@ class PackageUsageStats {
 
     return PermissionStatus.values.firstWhere((e) => e.name == result);
   }
+
+  static Future<bool> openAppUsageSettings() async {
+    final result = await _channel.invokeMethod("openAppUsageSettings");
+
+    return result;
+  }
 }
 
 enum PermissionStatus {
