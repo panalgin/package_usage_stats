@@ -17,6 +17,7 @@ import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
+import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
@@ -25,21 +26,28 @@ import io.flutter.plugin.common.MethodChannel.Result;
 /**
  * PackageUsageStatsPlugin
  */
-public class PackageUsageStatsPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
+public class PackageUsageStatsPlugin implements FlutterPlugin, MethodCallHandler, EventChannel.StreamHandler, ActivityAware {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
-    private MethodChannel _channel;
+    private MethodChannel _methodChannel;
+    private EventChannel _eventChannel;
     private ActivityPluginBinding _activityBinding;
     private FlutterPluginBinding _flutterBinding;
+    private UsagePermissionMonitor _monitor;
+
     private final String debugTag = "PackageUsageStats/Native";
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
         _flutterBinding = flutterPluginBinding;
-        _channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "package_usage_stats");
-        _channel.setMethodCallHandler(this);
+
+        _methodChannel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "package_usage_stats/method_channel");
+        _methodChannel.setMethodCallHandler(this);
+
+        _eventChannel = new EventChannel(flutterPluginBinding.getBinaryMessenger(), "package_usage_stats/event_channel");
+        _eventChannel.setStreamHandler(this);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -47,7 +55,8 @@ public class PackageUsageStatsPlugin implements FlutterPlugin, MethodCallHandler
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
         switch (call.method) {
             case "checkPermissionStatus":
-                boolean granted = false;
+                boolean granted;
+
                 Context context = _flutterBinding.getApplicationContext();
 
                 AppOpsManager appOps = (AppOpsManager) context
@@ -83,8 +92,16 @@ public class PackageUsageStatsPlugin implements FlutterPlugin, MethodCallHandler
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-        _channel.setMethodCallHandler(null);
-        _channel = null;
+        _methodChannel.setMethodCallHandler(null);
+        _methodChannel = null;
+
+        if (_monitor != null) {
+            _monitor.stopListening();
+            _monitor = null;
+        }
+
+        _eventChannel.setStreamHandler(null);
+        _eventChannel = null;
     }
 
     @Override
@@ -113,5 +130,28 @@ public class PackageUsageStatsPlugin implements FlutterPlugin, MethodCallHandler
 
     public Activity getActivity() {
         return (_activityBinding != null) ? _activityBinding.getActivity() : null;
+    }
+
+    @Override
+    public void onListen(Object arguments, EventChannel.EventSink sink) {
+        createListener(sink);
+    }
+
+    @Override
+    public void onCancel(Object arguments) {
+        if (_monitor != null) {
+            _monitor.stopListening();
+            _monitor = null;
+        }
+    }
+
+    private void createListener(EventChannel.EventSink sink) {
+        if (_monitor == null) {
+            _monitor = new UsagePermissionMonitor(_flutterBinding.getApplicationContext());
+        }
+
+        if (!_monitor.isListening()) {
+            _monitor.startListening(sink::success);
+        }
     }
 }
