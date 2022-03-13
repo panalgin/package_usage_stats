@@ -3,10 +3,15 @@ package com.stunware.package_usage_stats;
 import static androidx.core.content.ContextCompat.startActivity;
 
 import android.app.Activity;
+import android.app.AppOpsManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
 import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -27,25 +32,42 @@ public class PackageUsageStatsPlugin implements FlutterPlugin, MethodCallHandler
     /// when the Flutter Engine is detached from the Activity
     private MethodChannel _channel;
     private ActivityPluginBinding _activityBinding;
+    private FlutterPluginBinding _flutterBinding;
     private final String debugTag = "PackageUsageStats/Native";
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        _flutterBinding = flutterPluginBinding;
         _channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "package_usage_stats");
         _channel.setMethodCallHandler(this);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
         switch (call.method) {
             case "checkPermissionStatus":
-                result.success(PermissionStatus.granted.name());
+                boolean granted = false;
+                Context context = _flutterBinding.getApplicationContext();
+
+                AppOpsManager appOps = (AppOpsManager) context
+                        .getSystemService(Context.APP_OPS_SERVICE);
+                int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                        android.os.Process.myUid(), context.getPackageName());
+
+                if (mode == AppOpsManager.MODE_DEFAULT) {
+                    granted = (context.checkCallingOrSelfPermission(android.Manifest.permission.PACKAGE_USAGE_STATS) == PackageManager.PERMISSION_GRANTED);
+                } else {
+                    granted = (mode == AppOpsManager.MODE_ALLOWED);
+                }
+
+                result.success(granted);
                 break;
             case "openAppUsageSettings":
-                Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
                 try {
+                    Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
                     startActivity(getActivity().getApplicationContext(), intent, null);
                     result.success(true);
                 } catch (Exception ex) {
