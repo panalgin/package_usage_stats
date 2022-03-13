@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:package_usage_stats/package_usage_stats.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('package_usage_stats');
@@ -15,9 +14,5 @@ void main() {
 
   tearDown(() {
     channel.setMockMethodCallHandler(null);
-  });
-
-  test('getPlatformVersion', () async {
-    expect(await PackageUsageStats.platformVersion, '42');
   });
 }
