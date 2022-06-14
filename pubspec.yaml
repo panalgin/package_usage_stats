@@ -1,6 +1,6 @@
 name: package_usage_stats
-description: A new Flutter project.
-version: 0.0.2
+description: A flutter package for getting app usage information from the phone
+version: 0.0.3
 repository: https://github.com/panalgin/package_usage_stats
 
 environment:
@@ -14,7 +14,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.0
+  flutter_lints: ^2.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

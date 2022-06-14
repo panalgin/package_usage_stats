@@ -8,11 +8,9 @@ import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.provider.Settings;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
 import io.flutter.Log;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -54,7 +52,6 @@ public class PackageUsageStatsPlugin implements FlutterPlugin, MethodCallHandler
     // Documentations say that android.Manifest.permission.PACKAGE_USAGE_STATS require minSdk to be 21 (LOLLIPOP)
     // But Android Studio insists it is 23 (M), here we suppress it
     @SuppressLint("InlinedApi")
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onMethodCall(@NonNull MethodCall call, @NonNull Result result) {
         switch (call.method) {
@@ -133,7 +130,7 @@ public class PackageUsageStatsPlugin implements FlutterPlugin, MethodCallHandler
     }
 
     /*
-     * Shortcut for getting activity aware's activity
+     * Shortcut for getting the attached activity
      */
     public Activity getActivity() {
         return (_activityBinding != null) ? _activityBinding.getActivity() : null;

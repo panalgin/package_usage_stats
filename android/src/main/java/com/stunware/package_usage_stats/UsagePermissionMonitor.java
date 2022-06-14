@@ -1,9 +1,7 @@
 package com.stunware.package_usage_stats;
 
-import android.annotation.TargetApi;
 import android.app.AppOpsManager;
 import android.content.Context;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Process;
 
@@ -12,7 +10,6 @@ import androidx.core.util.Consumer;
 
 import io.flutter.Log;
 
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class UsagePermissionMonitor {
     private final Context context;
     private final AppOpsManager appOpsManager;
